@@ -1,0 +1,47 @@
+from __future__ import print_function
+import sys
+import numpy as np 
+import math
+from math import *
+
+mfp = 4*10**(-3) # m - is the mean free path
+radius = 7*10**8  # m  - radius of the sun
+c = 3*10**8 # m/2 - speed of light 
+
+N = 10000 # darts
+
+xrand = 0
+yrand = 0
+
+counter = 0
+
+sun = 700
+rsun = 0.07
+rsuun = 0.7
+rsuuun = 7
+
+distance = []
+r = 0
+
+#for loop used to create the random path movement i think
+
+for i in range (N): 
+    theta = np.random.uniform(0, 2*pi)
+    xrand = mfp*math.cos(theta)
+    yrand = mfp*math.sin(theta)
+    
+    r = r +( (((xrand)**2)+((yrand)**2))**0.5  )
+    
+    if r >= radius:
+        break
+    else:
+        r = r + ( (((xrand)**2)+((yrand)**2))**0.5  )
+        distance.append(r)
+    
+
+avgdist = np.mean(distance)
+
+times = avgdist / c
+timey = times / (pi*10**7) 
+
+print ("Time in years:", timey*10**18) # multiplied to extrapolate?

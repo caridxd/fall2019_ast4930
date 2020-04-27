@@ -1,0 +1,184 @@
+from __future__ import print_function
+import numpy as np
+import math 
+import matplotlib; matplotlib.use('agg')
+import matplotlib.pyplot as plt
+
+
+# Question 1 
+#	Part A: Analytically
+print ("Question 1")
+T_out = 40
+T_0 = 0
+k = .001
+t = 600 #seconds
+
+T = T_out + (T_0 - T_out) * np.exp(-k*t)
+
+print ("Analytical")
+print ("The final temperature at 10 minutes is:", T ,"degrees celsius when solved analytically")
+
+
+#	Part B: Euler's Method
+print ("Eulers Method")
+t = 600
+tempp = []
+def euler(f, T0, t0, tf, h):
+	t, T = t0, T0
+	while t <= tf:
+		tempp.append(T)
+		t+=h
+		T+=h*f(t,T)
+
+def cooling(time,temp):
+	return -0.001*(temp-40)
+
+euler(cooling, 0, 0, 600, 1)
+print ("The final temperature at 10 minutes is:", tempp[600],"degrees celsius with a time step of one second")
+
+temp25 = []
+def euler(f,T0,t0, tf, h):
+	t, T = t0, T0
+	while t <= tf:
+		temp25.append(T)
+		t+=h
+		T+=h*f(t,T)
+
+euler(cooling, 0, 0, 600, .25)
+print ("The final temperature after 10 minutes is", temp25[2400], "degrees celsius with time step of .25 seconds")
+
+temp50 = []
+def euler(f,T0, t0, tf, h):
+	t, T = t0, T0
+	while t <= tf:
+		temp50.append(T)
+		t+=h
+		T+=h*f(t,T)
+
+euler(cooling, 0, 0, 600, .50)
+print ("The final temperature after 10 minutes is", temp50[1200], "degrees celsius with time step of .50 seconds")
+
+
+temp125 = []
+def euler(f,T0,t0, tf, h):
+	t, T= t0,T0
+	while t<= tf:
+		temp125.append(T)
+		t+=h
+		T+= h*f(t,T)
+
+euler(cooling, 0, 0, 600, .125)
+print ("The final temperature after 10 minutes is", temp125[4800], "degrees celsius with time  step of .125 seconds")
+
+
+#	Part C: PercentError for Euler
+print ("Percent Error for Euler")
+percent1 = (np.abs(tempp[600]-T)/T)*100
+percent2 = (np.abs(temp25[2400]-T)/T)*100
+percent3 = (np.abs(temp50[1200]-T)/T)*100
+percent4 = (np.abs(temp125[4800]-T)/T)*100
+
+print ("The percent error between the step size of 1 second and the analytical answer is", percent1, "%")
+print ("The percent error between the step size of .25 seconds and the analtyical answer is", percent2, "%")
+print ("The percent error between the step size of .50 seconds and the analytical answer is", percent3 , "%")
+print ("The percent error between the step size of .125 seconds and the analytical answer is", percent4 , "%")
+print ("As the time step decreases, so does the error")
+
+
+#	Part D: RK Method
+print ("RK Method")
+def func(T):
+	return - 0.001*(t-40)
+t0 = 0
+t = 600
+T1 = 0
+
+#		1 step:
+h = 1
+tpoints = np.arange(t0, t, h)
+for i in tpoints:
+	k1 = h*func(T1)
+	k2 = h*func(T1+.5*k1)
+	T1 += k2
+print ("Hans temperature after 10 minutes is", T1, "in degrees celsius")
+
+# .25 step
+T25 = 0
+for i in tpoints:
+	k1 = h*func(T25)
+	k2 = h*func(T25+.5*k1)
+	T25 += k2
+print ("Hans temperature after 10 minutes is", T25, "in degrees celsius")
+
+# .50 step
+T50 = 0
+for i in tpoints:
+	k1 = h*func(T50)
+	k2 = h*func(T50+.5*k1)
+	T50 += k2
+print ("Hans temperature after 10 minutes is", T50, "in degrees celsius")
+
+# .125 step
+T125 = 0
+for i in tpoints:
+	k1 = h*func(T125)
+	k2 = h*func(T125+.5*k1)
+	T125 += k2
+print ("Hans temperature after 10 minutes is", T125, "in degrees celsius")
+
+
+# Errors for RK Method:
+
+percent1 = (np.abs(T1-T)/T)*100
+percent2 = (np.abs(T25-T)/T)*100
+percent3 = (np.abs(T50-T)/T)*100
+percent4 = (np.abs(T125-T)/T)*100
+print ("Errors for RK Method")
+print ("The percent error between the step size of 1 second and the analytical answer is", percent1, "%")
+print ("The percent error between the step size of .25 seconds and the analtyical answer is", percent2, "%")
+print ("The percent error between the step size of .50 seconds and the analytical answer is", percent3 , "%")
+print ("The percent error between the step size of .125 seconds and the analytical answer is", percent4 , "%")
+print ("As the time decreases, so does the error")
+
+
+# Question 2:
+print ("Question 2")
+def f(r,t):
+	x = r[0]
+	y = r[1]
+	fx = x - .5*x*y
+	fy = .5*x*y-2*y
+	return np.array([fx,fy], float)
+
+t0 = 0
+t = 30
+N = 1000.0
+h = (t-t0)/N
+
+tpoints = np.arange(t0, t, h)
+xpoints = []
+ypoints = []
+
+r = np.array([2.0, 2.0], float)
+
+for i in tpoints:
+	xpoints.append(r[0])
+	ypoints.append(r[1])
+	k1 = h*f(r,t)
+	k2 = h*f(r+.5*k1, t+.5*h)
+	k3 = h*f(r+.5*k2, t+.5*h)
+	k4 = h*f(r+k3, t+h)
+	r += (k1+2*k2+2*k3+k4)/6
+
+#graphs
+fig,ax = plt.subplots()
+ax.plot(tpoints, xpoints, '-r', label = 'Rabbits')
+ax.plot(tpoints, ypoints, '-b', label = 'Foxes')
+plt.title('Rabbit vs Fox Population over Time')
+plt.xlabel('Time')
+plt.ylabel('Population')
+legend = ax.legend(loc = 'upper right', shadow = False, fontsize = 'x-large')
+#plt.show
+plt.savefig("coll_hw8.png")
+
+print ("We see that with a low fox population, the rabbit population increases")

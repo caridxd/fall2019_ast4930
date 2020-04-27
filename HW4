@@ -1,0 +1,191 @@
+from __future__ import print_function
+import sys
+import numpy as np 
+from math import *
+import matplotlib; matplotlib.use('agg')
+import matplotlib.pyplot as plt
+from gaussxw import gaussxw
+from numpy import ones,copy,cos,tan,pi,linspace
+
+#             known constants:
+c = 3000  
+odm = 0.3 #m -- matter density
+odl = 0.7 #l -- density of dark energy
+odr = 0.0 #r -- density of radiation
+
+
+# Formulas 
+def r(z):
+    H = ((odm*((1+z)**3))+(odr*((1+z)**2)+odl))**0.5
+    r = c/H
+    return r 
+
+#from this point out, the for loops are created to loop the equation from 0 to 10.
+#after, the results will be appended to an empty list which will be then graphed for all the different rules
+#the graphs are not perfect :) 
+#worked with Jeremy, Gage, Jillian, and everyone else in the astro lounge
+
+
+# Linear _____________________________________________
+lin = []
+z1 = 0
+ 
+for z in range (0,11):
+    li = (((z)-(z1))*r(z))/(1+(z+1))+500
+    lin.append(li)
+    
+z = range (0,11)
+#print (lin)
+
+# Plot
+plt.figure()
+plt.title('Linear Integration')
+plt.xlabel('Redshift (z)')
+plt.ylabel('Angular Diameter Distance (DA)')
+plt.plot(z,lin)
+#plt.show()
+plt.savefig("coll_hw4_linear.png")
+
+
+# Trapezoidal ________________________________________
+trap = []
+z1 = 0
+z2 = 10
+n = 1000.0
+h = (z2-z1)/n
+
+x = (((h/2)*r(z1))/2) + 600
+trap.append(x)
+
+for z in range (1,11):
+    tr1 = (z+z1)
+    tr2 = (r(z)-r(z1))/2
+    tr3 = ((tr1*tr2))/(1+(z+1))
+    tr = tr3 + 1600
+    trap.append(tr)
+        
+z = range (0, 11)
+#print (trap)
+
+          
+# Plot
+plt.figure() #will make new graph
+plt.title('Trapezoidal Integration')
+plt.xlabel('Redshift (z)')
+plt.ylabel('Angular Diameter Distance (DA)')
+plt.plot(z,trap)
+#plt.show()
+plt.savefig("coll_hw4_trap.png")
+
+
+# Simpson's Rule ____________________________________
+simpson = []
+
+def simpsons(r,a,b,n):
+    h = (b-a)/float(n)
+    j = 0.0
+    x = a+h
+    for i in range(1, n, 2):
+        j+=4*r(x)
+        x+=2*h
+    x=a+2*h
+    for i in range(2,n,2):
+        j+=2*r(x)
+        x+=2*h
+    return (h/3)*(r(a)+r(b)+j)
+
+for z in range (0, 11):
+    q = (simpsons(r, 0, z, 100000)/(1+z))
+    simpson.append(q)
+    
+z = range (0,11)
+#print (simpson)
+
+          
+# Plot
+plt.figure() #will make new graph
+plt.title('Simpsons Rule Integration')
+plt.xlabel('Redshift (z)')
+plt.ylabel('Angular Diameter Distance (DA)')
+plt.plot(z,simpson)
+#plt.show()
+plt.savefig("coll_hw4_simpsons.png")
+
+# Gaussian Quad's Rule ________________________________
+def gaussxw(N):
+    # got from file
+    # Initial approximation to roots of the Legendre polynomial
+    a = linspace(3,4*N-1,N)/(4*N+2)
+    x = cos(pi*a+1/(8*N*N*tan(a)))
+
+    # Find roots using Newton's method
+    epsilon = 1e-15
+    delta = 1.0
+    while delta>epsilon:
+        p0 = ones(N,float)
+        p1 = copy(x)
+        for k in range(1,N):
+            p0,p1 = p1,((2*k+1)*x*p1-k*p0)/(k+1)
+        dp = (N+1)*(p0-x*p1)/(1-x*x)
+        dx = p1/dp
+        x -= dx
+        delta = max(abs(dx))
+
+    # Calculate the weights
+    w = 2*(N+1)*(N+1)/(N*N*(1-x*x)*dp*dp)
+
+    return x,w
+
+quad = []
+no = []
+
+def gaussxwab(N,a,b):
+    x,w = gaussxw(N)
+    return 0.5*(b-a)*x+0.5*(b+a),0.5*(b-a)*w
+
+for i in range (1, 11):
+    x,w = gaussxw(10)
+    N = 10
+    a = 0
+    b = i
+    xp = 0.5*(b-a)*x+(0.5*(b-a))
+    wp = 0.5*(b-a)*w
+    s = 0
+    for k in range(N):
+        s = s +(wp[k]*r(xp[k]))
+        quad.append(s)
+
+for i in range(1,11):
+    data=((((quad[i-1])*r(i))/(i+1))/100)+300
+    no.append(data) 
+
+
+z = range(1,11)
+    
+    
+plt.figure() #will make new graph
+plt.title('Gaussians Rule Integration')
+plt.xlabel('Redshift (z)')
+plt.ylabel('Angular Diameter Distance (DA)')
+plt.plot(z,no)
+#plt.show()
+plt.savefig("coll_hw4_gauss.png")
+
+# np.trapzzzz's Rule ________________________________
+def f(z):
+    H = (odm*(1+np.array(z)**3)+(odr*((1+np.array(z)**2)+odl)))**0.5
+    r = c/H
+    return r 
+
+x=[]
+for i in range(11):
+    x.append(i)
+np.trapz(f(x),x)            
+             
+             
+plt.figure()
+plt.title("np.trapz graph")        
+plt.xlabel('Redshift(z)')
+plt.ylabel('Angular Diameter Distance (DA)')
+plt.plot(x,f(x)) 
+plt.savefig('coll_hw4_nptrapz.png') 

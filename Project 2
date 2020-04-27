@@ -1,0 +1,110 @@
+from __future__ import print_function
+import numpy as np
+from numpy import *
+from math import *
+from random import *
+import matplotlib; matplotlib.use('agg')
+import matplotlib.pyplot as plt
+
+ft = 20 #size of the room
+humans = 100 #number of people
+
+#choices
+ifvax = ['unvaxx', 'vaxx'] 
+ifsick = ['sick', 'healthy']
+
+#empty lists (soz :-/)
+name = []
+xposition = [] #general x position
+yposition = [] #general y position
+health = [] #used to append ifvax choices
+sick = [] #used to append ifsick choices
+xsick =[] #sick ppl x position (graph only)
+ysick = [] #sick ppl y position (graph only)
+xhealth =[] #healthy ppl x position (graph only)
+yhealth =[] #healthy ppl y postion (graph only)
+sicko = [] #used to append initial ifsick choices
+healtho = [] #used to append intial ifvax choices
+sicky = [] #used to append final ifsick choices
+healthy = [] #used to append final ifvax choices
+
+#counters
+current_sick = 0
+not_sick = 0 
+init_healthy_vax = 0
+init_healthy_unvax = 0
+init_sick_vax = 0
+init_sick_unvax = 0
+
+#for-loop
+for i in range (100):
+    name.append(i) #giving the ppl a name
+    xposition.append(np.random.randint(ft)) #random x location
+    yposition.append(np.random.randint(ft)) #random y location
+    health.append(np.random.choice(ifvax)) #random choice if vax or not
+    sick.append(np.random.choice(ifsick)) #random choice if sick or not
+    
+    if sick[i] == 'healthy':
+        xhealth.append(xposition[i])
+        yhealth.append(yposition[i])
+        if health[i] == 'vaxx':
+            init_healthy_vax+=1 #healthy vax SMART ppl
+        if health[i] == 'unvaxx':
+            init_healthy_unvax+=1 #healthy unvax (?) ppl
+                
+    if sick[i] == 'sick':
+        xsick.append(xposition[i])
+        ysick.append(yposition[i])
+        if health[i] == 'vaxx':
+            init_sick_vax+=1 #sick vax ppl (that will survive)
+        if health[i] == 'unvaxx':
+            init_sick_unvax+=1 #sick unvax ppl :-/
+            
+    if xposition[i] < 5 or yposition[i] < 5: #radius of 5 units around both x and y direction
+        #basically if one person is within 5 units of another and they are both
+        #healthy and unvaccinated then they WILL get sick 
+        if sick[i] == 'healthy':
+            if health[i] == 'unvaxx':
+                sick[i] == 'sick'
+                current_sick += 1
+            else:
+                not_sick += 1
+               
+    sicko.append(init_sick_vax+init_sick_unvax)
+    healtho.append(init_healthy_vax+init_healthy_unvax)
+    sicky.append(init_sick_vax+init_sick_unvax+current_sick)
+    healthy.append(init_healthy_vax+init_healthy_unvax-current_sick)
+    
+#needed 4 graphs 
+og_health = init_healthy_vax+init_healthy_unvax
+og_sick = init_sick_vax+init_sick_unvax
+final_health = og_health - current_sick
+final_sick = og_sick + current_sick
+
+#everything = np.column_stack([name, xposition, yposition, health, sick])
+#print(everything)
+
+print()
+print("Initial sick people:", og_sick)
+print("Initial healthy people:", og_health)
+print(current_sick," People became sick")
+print("Final sick people:", final_sick)
+print("Final healthy people:", final_health)
+print()
+
+#Locations of people
+plt.scatter(xhealth, yhealth, label= "healthy ppl", color= "blue", s=30, marker = 'x')
+plt.scatter(xsick, ysick, label= "sick ppl", color= "red", s=30, marker = 'x')
+plt.title('Location of sick vs healthy people') 
+plt.legend() 
+plt.savefig('location of ppl')
+
+#Total Sick vs Total Healthy
+plt.figure()
+plt.scatter(sicko, healtho [::-1],color = 'blue',label="Initial healthy vs sick", s=30, marker = '.')
+plt.scatter(sicky,healthy[::-1],color = 'red',label="Final healthy vs sick", s = 30, marker = '.')
+plt.xlabel('Total Sick People')
+plt.ylabel('Total Healthy People')
+plt.title('Sick vs Healthy People') 
+plt.legend() 
+plt.savefig('sick vs healthy')

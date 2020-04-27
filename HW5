@@ -1,0 +1,81 @@
+from __future__ import print_function
+import sys
+import numpy as np 
+from math import *
+import matplotlib; matplotlib.use('agg')
+import matplotlib.pyplot as plt
+
+# worked with Jillian, Gage, Jeremy and everyone else in the astrolounge
+
+
+# Question 1:
+#Basically used the class notes and taylored them to the equation of a circle
+def f(x,y):
+	r = ((x**2)+(y**2))**(1/2)
+	return (r)
+
+a = 1
+b = 2
+ndarts = 1000
+
+x = np.linspace(a,b,100)
+y = np.linspace(a,b,100)
+h = f(x,y)
+maxh = np.max(h)
+
+r = ((x**2)+(y**2))**(0.5)
+
+xrand = np.random.uniform(a,b, size = ndarts)
+yrand = np.random.uniform(a,b, size = ndarts)
+hrand = np.random.uniform(0, maxh, size = ndarts)
+
+hbelow = f(xrand,yrand)
+counter = 0
+
+for i in range (ndarts):
+	if hrand[i] < hbelow[i]:
+		counter = counter + 1
+
+Area = pi*(r**2)
+FnArea = (counter/ndarts)*Area[0]
+pie = FnArea*0.5
+# i got 6.28 for some reason so i divided by 1/2
+print ("1. Pi to 3 digits is:", round(pie,2))
+
+
+#__________________________________________________________
+
+# Question 2:
+
+
+# Below code was used to calculate the smallest number of people which was 23
+# My Monte Carlo code didnt seem to work but i was able to calculate the number using probability 
+def birthdays(x):
+	p = 1
+	for i in range (x):
+		p = p * ((365-i)/365.0)
+	p = 100*p
+	return (round(p,3))
+
+for n in range (1,51):
+	#print (n, birthdays(n))
+	clash = n
+	if birthdays(clash) <= 51 and birthdays(clash) >= 49:
+		print("2. The smallest # of ppl for the probability to be greater than 0.5 is:", n)
+
+# Monte Carlo Method:
+#max_ppl  = 100
+#ndarts = 1000
+#
+#for current_number in range(2, max_ppl+1):
+#	matches = 0
+#	for x in range(int(ndarts)):
+#		birthdays = np.random.randint(365, size=current_number)     
+#            
+#        unique_birthdays = np.unique(birthdays)
+#	if len(unique_birthdays) < len(birthdays):
+#		matches += 1            
+#
+#	probability = 100*(matches / x)
+#	if int(probability) == 50:
+#	       print(current_number)

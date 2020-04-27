@@ -1,0 +1,174 @@
+from __future__ import print_function
+import numpy as np
+from numpy import *
+from math import *
+from random import *
+import matplotlib; matplotlib.use('agg')
+import matplotlib.pyplot as plt
+
+#                                                                                     sorry in advanced for the list names 
+# MCMC ___________________________________________________________________________________________________
+
+
+dmax = 1000
+Tmax = 10.0
+Tmin = 1*10**-3
+tau = 1*10**4
+T = Tmax
+t = 0
+uhm = []
+
+while t < dmax:
+    
+    v = 1 #assuming that an elevator takes 1 floor per second 
+    floors = 100 # the amount of floors in the building
+    ppl = 10 # the number of people in the building
+    flr1 = []
+    flr2 = []
+    t+=1
+    
+        #10 initial places for people
+    for index in range(ppl):
+        flrand = np.random.randint(floors)
+        flr1.append(flrand)
+        pplrand = np.random.randint(floors)
+        flr2.append(pplrand)
+
+    flr1.insert(10,0)
+
+        #making sure that none of the people want to leave on the same floor
+    for i in range (ppl):
+        if flr1[i] == flr2[i]:
+            flr1[i] = np.random.randint(floors)
+            flr2[i] = np.random.randint(floors)
+        if flr2[i] == flr1[i]:
+            flr2[i] = np.random.randint(floors)
+            flr1[i] = np.random.randint(floors)
+   
+
+    # Time to CODEEEEEE ______________________________________________________________________________________________
+
+    bleep = [] #drop off from flr1[i to flr2[i]
+    bloop = [] #transition between flr2[i] and flr[i+1]
+    bluup = [] #total zig zag
+
+        # here is the ground floor set at 0
+    start = 0
+
+    for i in range(ppl):
+        pickup = start + flr1[i]
+
+            #here you would calculate the difference between where the person wants to travel
+            # from their intial floor to their final floor
+        if flr1[i] > flr2[i]:
+            dropoff = flr1[i]-flr2[i]   
+        elif flr1[i] < flr2[i]:
+            dropoff = abs(flr1[i]-flr2[i])
+
+        bleep.append(dropoff)
+
+        if (i+1) > len(flr1):
+            break
+
+            # here you want to calculate the distance between the final floor of one individual
+            # and the start floor of another individual
+        if flr2[i] > flr1[i+1]:
+            transition = flr2[i]-flr1[i+1]    
+        elif flr2[i] < flr1[i+1]:
+            transition = abs(flr2[i]-flr1[i+1])
+
+        bloop.append(transition)
+        bluup = bloop+bleep #total 
+
+    blaap = sum(bluup)
+
+    # Swap: Straight from Textbook ______________________________________________________________________________________
+    dweeb = [] #following for swaps
+    sweep = [] #drop off from flr1[i] to flr2[i]
+    swoop = [] #transition between flr2[i] and flr[i+1]
+    swuup = [] #total zig zag
+    
+    i, j = randrange(1, ppl), randrange(1, ppl)
+
+    while i==j:
+        i, j = randrange(1, ppl), randrange(1, ppl)
+
+    flr1[i], flr1[j] = flr1[j], flr1[i]
+    flr2[i], flr2[j] = flr2[j], flr2[i]
+    
+    #copied from above: 
+    for i in range(ppl):
+        pickup = start + flr1[i]
+
+            #here you would calculate the difference between where the person wants to travel
+            # from their intial floor to their final floor
+        if flr1[i] > flr2[i]:
+            dropoff = flr1[i]-flr2[i]   
+        elif flr1[i] < flr2[i]:
+            dropoff = abs(flr1[i]-flr2[i])
+
+        sweep.append(dropoff)
+
+        if (i+1) > len(flr1):
+            break
+
+            # here you want to calculate the distance between the final floor of one individual
+            # and the start floor of another individual
+        if flr2[i] > flr1[i+1]:
+            transition = flr2[i]-flr1[i+1]    
+        elif flr2[i] < flr1[i+1]:
+            transition = abs(flr2[i]-flr1[i+1])
+
+        swoop.append(transition)
+        swuup = swoop+sweep        
+
+    swaap = sum(swuup)
+
+    deltaD = abs(swaap-blaap)
+    delta = swaap - blaap
+    
+    # Positive Swaps? or Rejected Moves _________________________________________________________________________
+    
+        #from book
+    if random() > exp(-deltaD/T):
+        flr1[i], flr1[j] = flr1[j], flr1[i]
+        flr2[i], flr2[j] = flr2[j], flr2[i]
+
+    if delta < 0:
+        uhm.append(swaap)
+    elif T> Tmin:
+        t += 1
+        T = Tmax*exp(-t/tau)
+        
+    sz = len(uhm)
+
+def average(lst):
+    return sum(lst)/len(lst)
+
+
+#Printing the floors and distances to check if everything works out:
+print()
+#print("example floor1:", flr1)
+#print("example floor2:", flr2)
+print("example distance:", blaap)  
+print()
+
+#print("example switch1:", flr1)
+#print("example switch2:", flr2)
+print("example new distance:", swaap)
+print()
+
+#print(uhm)
+print("minimized total distance for average:", average(uhm))
+
+
+#print(size)
+
+# Plot
+plt.title('Distance Covered with Swaps')
+plt.xlabel('Distance')
+plt.ylabel('Counter')
+plt.plot(range(0,sz), uhm)
+plt.axhline(average(uhm), color='r')
+#plt.show()
+plt.savefig("coll_project1.png")

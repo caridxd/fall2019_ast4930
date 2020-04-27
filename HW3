@@ -1,0 +1,97 @@
+from __future__ import print_function
+import sys
+import numpy as np
+from math import *
+import matplotlib; matplotlib.use('agg')
+import matplotlib.pyplot as plt
+
+
+# Load the file
+ann = np.flip(np.loadtxt("annual_csv.csv", dtype=float, skiprows=1))
+avg = np.flip(np.loadtxt("annual_csv_average.csv", dtype=float, skiprows=1))
+
+
+# converting the data to x and y
+# x is the years while y would be the change in temperature 
+years_ann = ann[:,1]
+years_avg = avg[:,1]
+temp_ann = ann[:,0]
+temp_avg = avg[:,0]
+
+
+# Create a for-loop. The loop will help make the function easier.
+# Current plan is to create a for loop with the total amount of years there are without taking each individual
+# temperature and doing the math for that. The final answer will be appended to a variable which is what will be 
+# outputted as der_ann and then der_avg
+
+
+#derivative of the annual temperatures:
+der_ann = []
+def derivative(temp_ann):
+    h = 1
+    for i in range (0, len(temp_ann)):
+        if i == 0:
+            top = temp_ann[i+h] - (temp_ann[i])
+            bottom = h
+            slope = top / bottom
+            der_ann.append(slope)
+                      
+        elif i == len(temp_ann) - 1:
+            top = temp_ann[i] - (temp_ann[i - h])
+            bottom = h
+            slope = top / bottom
+            der_ann.append(slope)
+            
+        else: 
+            top = temp_ann[i + h] - (temp_ann[i - h])
+            bottom = 2*h
+            slope = top / bottom
+            der_ann.append(slope)                      
+    return list(der_ann)  
+
+derivative(temp_ann)
+
+
+# Doing it again for the average temperature:
+der_avg = []
+def derive(temp_avg):
+    h = 1
+    for i in range (0, len(temp_avg)):
+        if i == 0:
+            top = temp_avg[i+h] - (temp_avg[i])
+            bottom = h
+            slope = top / bottom
+            der_avg.append(slope)
+            
+        elif i == len(temp_avg) - 1:
+            top = temp_avg[i] - (temp_avg[i - h])
+            bottom = h
+            slope = top / bottom
+            der_avg.append(slope)
+            
+        else: 
+            top = temp_avg[i + h] - (temp_avg[i - h])
+            bottom = 2*h
+            slope = top / bottom
+            der_avg.append(slope)  
+            
+    return list(der_avg)  
+
+derive(temp_avg)
+
+
+# Plot
+plt.title('Annual Data')
+plt.xlabel('Time')
+plt.ylabel('Rate of Change of Temperature over Annual Time')
+plt. plot(years_ann, der_ann)
+#plt.show()
+plt.savefig("coll_hw3a.png")
+
+plt.figure()
+plt.title('Average Data')
+plt.xlabel('Time')
+plt.ylabel('Rate of Change of Temperature over Average Time')
+plt. plot(years_avg, der_avg)
+#plt.show()
+plt.savefig("coll_hw3b.png")

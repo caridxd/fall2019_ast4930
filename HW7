@@ -1,0 +1,112 @@
+from __future__ import print_function
+import numpy as np 
+import math
+from math import *
+import sympy as sym
+from numpy import array,empty
+
+# I worked with Jillian and Gage
+
+#1) Gauss Thing:
+
+A = array([[ 0,  1,  4,  1 ],
+           [ 3,  4, -1, -1 ],
+           [ 1, -4,  1,  5 ],
+           [ 2, -2,  1,  3 ]],float)
+v = array([ -4, 3, 9, 7 ],float)
+N = len(v)
+
+# Gaussian elimination
+for m in range(N):
+
+    # Divide by the diagonal element
+    #The if-statement here causes the row to change to a different location if there was a 0 at the front. 
+    div = A[m,m]
+    if div == 0:
+        A[[m,m+1]] = A[[m+1,m]]
+        div = A[m,m]
+    
+    A[m,:] /= div
+    v[m] /= div
+
+    # Now subtract from the lower rows
+    for i in range(m+1,N):
+        mult = A[i,m]
+        A[i,:] -= mult*A[m,:]
+        v[i] -= mult*v[m]
+
+# Backsubstitution
+x = empty(N,float)
+for m in range(N-1,-1,-1):
+    x[m] = v[m]
+    for i in range(m+1,N):
+        x[m] -= A[m,i]*x[i]
+
+print(x)
+
+#####################################################################
+
+#2: What is the temperature??
+
+#cgs units
+h = 6.626 *10**-27 #plancks constant -- ergs*s
+c = 3*10**10 #speed of light -- cm/s
+b = 1.25*10**-12 #intensity -- cgs units
+y = 870 #wavelength -- 1 micron = 10^-4 cm --> 870 micron = .087 cm
+v = (c / (y*(10**-4))) #frequency -- Hz                     
+k = 1.38*10**-16 #cm^2 g s^2 K^-1
+
+
+def tempe(T):
+    ba = (2*h*(v**3))/c**2
+    bb = math.exp((h*v)/(k*T)) - 1
+    return (ba/bb) 
+
+#Testing out the formula for temperature to set the bounds :)
+#x = 42
+#print("The answer at", x, "is ",tempe(x))
+
+# a: bisection method
+
+def bisection(a,b): 
+    c = a 
+    while ((b-a) >= 0.01): 
+        # Find middle point 
+        c = (a+b)/2    
+        # Check if middle point is root 
+        if (tempe(c) == 0.0): 
+            break        
+        # Decide the side to repeat the steps 
+        if (tempe(c) * tempe(a) < 0): 
+            b = c 
+        else: 
+            a = c 
+        break          
+    print("The value of the root is: ", c)
+
+# this formula allowed me to finc the midpoint of two values, although I do understand that you need a postive and a negative value to find where zero is located. 
+
+a = 40
+b = 45
+bisection(a,b)     
+
+# b: Newton-Raphson iteration (NRI):
+
+#for this code i tried using the derivitave code from homework 3 and applying the formula to a list of numbers but was unable to get it to work. I understand that once you get the list of numbers and found where it equal to zero you were able to find the root but it would not work for me. 
+
+def derivFunc( T ): 
+    bro = math.exp(h*v/k*T)
+    what = 2*bro*h**2*v**4
+    yo = (c**2)*k*(T**2)(bro-1)**2
+    return  (what/yo)
+  
+# Function to find the root 
+def newtonRaphson( T ): 
+    h = tempe(T) / derivFunc(T) 
+    while abs(h) >= 0.0001: 
+        h = tempe(x)/derivFunc(x) 
+          
+        # x(i+1) = x(i) - f(x) / f'(x) 
+        T = T - h 
+      
+    print("root is : ", x) 
